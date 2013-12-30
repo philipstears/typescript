@@ -44,12 +44,14 @@ module TypeScript {
     export class ReferenceResolver {
         private inputFileNames: string[];
         private host: IReferenceResolverHost;
+        private topLevelImportResolver: ITopLevelImportResolver;
         private visited: IIndexable<string>;
 
         constructor(inputFileNames: string[], host: IReferenceResolverHost, private useCaseSensitiveFileResolution: boolean) {
             this.inputFileNames = inputFileNames;
             this.host = host;
             this.visited = {};
+            this.topLevelImportResolver = new TopLevelImportResolverWithCache(host);
         }
 
         public static resolve(inputFileNames: string[], host: IReferenceResolverHost, useCaseSensitiveFileResolution: boolean): ReferenceResolutionResult {
@@ -122,39 +124,10 @@ module TypeScript {
                 return this.resolveIncludedFile(path, referenceLocation, resolutionResult);
             }
             else {
-                // Search for the file
-                var parentDirectory = this.host.getParentDirectory(referenceLocation.filePath);
-                var searchFilePath: string = null;
-                var dtsFileName = path + ".d.ts";
-                var tsFilePath = path + ".ts";
-
-                var start = new Date().getTime();
-
-                do {
-                    // Search for ".d.ts" file firs
-                    var currentFilePath = this.host.resolveRelativePath(dtsFileName, parentDirectory);
-                    if (this.host.fileExists(currentFilePath)) {
-                        // Found the file
-                        searchFilePath = currentFilePath;
-                        break;
-                    }
-
-                    // Search for ".ts" file
-                    currentFilePath = this.host.resolveRelativePath(tsFilePath, parentDirectory);
-                    if (this.host.fileExists(currentFilePath)) {
-                        // Found the file
-                        searchFilePath = currentFilePath;
-                        break;
-                    }
-
-                    parentDirectory = this.host.getParentDirectory(parentDirectory);
-                }
-                while (parentDirectory);
-
-                TypeScript.fileResolutionImportFileSearchTime += new Date().getTime() - start;
+                var searchFilePath = this.topLevelImportResolver.resolvePath(referenceLocation.filePath, path);
 
                 if (!searchFilePath) {
-                    // Cannot find file import, do not reprot an error, the typeChecker will report it later on
+                    // Cannot find file import, do not report an error, the typeChecker will report it later on
                     return path;
                 }
 
