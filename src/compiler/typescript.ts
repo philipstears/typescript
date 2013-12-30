@@ -117,10 +117,15 @@ module TypeScript {
 
     export class TypeScriptCompiler {
         private semanticInfoChain: SemanticInfoChain = null;
+        private _topLevelImportResolver = new TopLevelImportResolverWithCache(new StandardResolverHost(IO));
 
         constructor(public logger: ILogger = new NullLogger(),
                     private _settings: ImmutableCompilationSettings = ImmutableCompilationSettings.defaultSettings()) {
             this.semanticInfoChain = new SemanticInfoChain(this, logger);
+        }
+
+        public topLevelImportResolver(): ITopLevelImportResolver {
+            return this._topLevelImportResolver;
         }
 
         public compilationSettings(): ImmutableCompilationSettings {

@@ -124,15 +124,15 @@ module TypeScript {
                 return this.resolveIncludedFile(path, referenceLocation, resolutionResult);
             }
             else {
-                var searchFilePath = this.topLevelImportResolver.resolvePath(referenceLocation.filePath, path);
+                var resolvedImport = this.topLevelImportResolver.resolve(referenceLocation.filePath, path);
 
-                if (!searchFilePath) {
+                if (!resolvedImport) {
                     // Cannot find file import, do not report an error, the typeChecker will report it later on
                     return path;
                 }
 
                 // Preprocess the file and resolve its imports/references
-                return this.resolveFile(searchFilePath, resolutionResult);
+                return this.resolveFile(resolvedImport.absoluteModulePath, resolutionResult);
             }
         }
 

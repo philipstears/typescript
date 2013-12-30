@@ -77,7 +77,7 @@ module TypeScript {
         private subtypeCache: IBitMatrix = BitMatrix.getBitMatrix(/*allowUndefinedValues:*/ true);
         private identicalCache: IBitMatrix = BitMatrix.getBitMatrix(/*allowUndefinedValues:*/ true);
 
-        constructor(private compilationSettings: ImmutableCompilationSettings, public semanticInfoChain: SemanticInfoChain) { }
+        constructor(private compilationSettings: ImmutableCompilationSettings, private topLevelImportResolver: ITopLevelImportResolver, public semanticInfoChain: SemanticInfoChain) { }
 
         private cachedArrayInterfaceType() {
             if (!this._cachedArrayInterfaceType) {
@@ -766,24 +766,22 @@ module TypeScript {
 
                 // Search in global context if there exists ambient module
                 symbol = this.semanticInfoChain.findAmbientExternalModuleInGlobalContext(quoteStr(originalIdText));
-
+                
                 if (!symbol) {
-                    // REVIEW: Technically, we shouldn't have to normalize here - we should normalize in addUnit.
-                    // Still, normalizing here alows any language services to be free of assumptions
-                    var path = getRootFilePath(switchToForwardSlashes(currentFileName));
 
-                    // Search for external modules compiled (.d.ts or .ts files) starting with current files directory to root directory until we find the module
-                    while (symbol === null && path != "") {
-                        symbol = this.semanticInfoChain.findExternalModule(path + idText);
-                        if (symbol === null) {
-                            if (path === '/') {
-                                path = '';
-                            } else {
-                                path = normalizePath(path + "..");
-                                path = path && path != '/' ? path + '/' : path;
-                            }
-                        }
+                    // get the path to the module
+                    var path = switchToForwardSlashes(currentFileName);                    
+
+                    var resolvedModule = this.topLevelImportResolver.resolve(
+                        currentFileName,
+                        idText
+                        );
+
+                    if (!resolvedModule) {
+                        return null;
                     }
+
+                     symbol = this.semanticInfoChain.findExternalModule(resolvedModule.absoluteModuleIdentifier);
                 }
             }
 

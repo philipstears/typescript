@@ -67,6 +67,11 @@ module TypeScript {
         }
     }
 
+    export interface IResolvedImport {
+        absoluteModuleIdentifier: string;
+        absoluteModulePath: string;        
+    }
+
     export interface ITopLevelImportResolverHost {
         resolveRelativePath(path: string, directory: string): string;
         fileExists(path: string): boolean;
@@ -74,39 +79,44 @@ module TypeScript {
     }
 
     export interface ITopLevelImportResolver {
-        resolvePath(referencingModulePath: string, moduleIdentifier: string): string;
+        resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport;
     }
 
     class TopLevelImportResolver implements ITopLevelImportResolver {
         constructor(private host: ITopLevelImportResolverHost) {
         }
 
-        resolvePath(referencingModulePath: string, moduleIdentifier: string): string {
+        resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
             TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path resolver");
             TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path resolver");
 
             // Search for the file
             var parentDirectory = this.host.getParentDirectory(referencingModulePath);
-            var searchFilePath: string = null;
             var dtsFileName = moduleIdentifier + ".d.ts";
             var tsFilePath = moduleIdentifier + ".ts";
+
+            var importDetails: IResolvedImport;
 
             var start = new Date().getTime();
 
             do {
-                // Search for ".d.ts" file firs
+                // Search for ".d.ts" file first
                 var currentFilePath = this.host.resolveRelativePath(dtsFileName, parentDirectory);
                 if (this.host.fileExists(currentFilePath)) {
-                    // Found the file
-                    searchFilePath = currentFilePath;
+                    importDetails = {
+                        absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, parentDirectory),
+                        absoluteModulePath: currentFilePath
+                    };
                     break;
                 }
 
                 // Search for ".ts" file
                 currentFilePath = this.host.resolveRelativePath(tsFilePath, parentDirectory);
                 if (this.host.fileExists(currentFilePath)) {
-                    // Found the file
-                    searchFilePath = currentFilePath;
+                    importDetails = {
+                        absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, parentDirectory),
+                        absoluteModulePath: currentFilePath
+                    };
                     break;
                 }
 
@@ -116,21 +126,21 @@ module TypeScript {
 
             TypeScript.fileResolutionImportFileSearchTime += new Date().getTime() - start;
 
-            return searchFilePath;
+            return importDetails;
         }
     }
 
     class DirectoryResolverWithCache implements ITopLevelImportResolver {
-        private modules = new StringHashTable<string>();
+        private modules = new StringHashTable<IResolvedImport>();
 
         constructor(private resolver: ITopLevelImportResolver) {
         }
 
-        resolvePath(referencingModulePath: string, moduleIdentifier: string): string {
+        resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
             var modulePath = this.modules.lookup(moduleIdentifier);
 
             if (!modulePath) {
-                modulePath = this.resolver.resolvePath(referencingModulePath, moduleIdentifier);
+                modulePath = this.resolver.resolve(referencingModulePath, moduleIdentifier);
                 this.modules.add(moduleIdentifier, modulePath);
             }
 
@@ -146,7 +156,7 @@ module TypeScript {
             this.resolver = new TopLevelImportResolver(host);
         }
 
-        resolvePath(referencingModulePath: string, moduleIdentifier: string): string {
+        resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
             var directoryPath = this.host.getParentDirectory(referencingModulePath);
             var directoryResolver = this.directories.lookup(directoryPath);
 
@@ -155,7 +165,7 @@ module TypeScript {
                 this.directories.add(directoryPath, directoryResolver);
             }
 
-            return directoryResolver.resolvePath(referencingModulePath, moduleIdentifier);
+            return directoryResolver.resolve(referencingModulePath, moduleIdentifier);
         }
     }
 }
