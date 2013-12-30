@@ -13,14 +13,12 @@
 // limitations under the License.
 //
 
+///<reference path='io.ts' />
 ///<reference path='references.ts' />
 
 if (Error) (<any>Error).stackTraceLimit = 1000;
 
 module TypeScript {
-
-    declare var IO: any;
-
     export var fileResolutionTime = 0;
     export var fileResolutionIOTime = 0;
     export var fileResolutionScanImportsTime = 0;
