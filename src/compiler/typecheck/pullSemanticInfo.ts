@@ -281,7 +281,7 @@ module TypeScript {
                         var dynamicModuleDecl = topLevelDecl.getChildDecls()[0];
                         symbol = <PullContainerSymbol>dynamicModuleDecl.getSymbol();
                         this.symbolCache[dtsCacheID] = isDtsFile ? symbol : null;
-                        this.symbolCache[tsCacheID] = !isDTSFile ? symbol : null;
+                        this.symbolCache[tsCacheID] = !isDtsFile ? symbol : null;
                         return symbol;
                     }
                 }
