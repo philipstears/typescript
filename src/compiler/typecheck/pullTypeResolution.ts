@@ -768,20 +768,41 @@ module TypeScript {
                 symbol = this.semanticInfoChain.findAmbientExternalModuleInGlobalContext(quoteStr(originalIdText));
                 
                 if (!symbol) {
+                    var resolvedModule = this.topLevelImportResolver.resolve(currentFileName, idText);
 
-                    // get the path to the module
-                    var path = switchToForwardSlashes(currentFileName);                    
-
-                    var resolvedModule = this.topLevelImportResolver.resolve(
-                        currentFileName,
-                        idText
-                        );
-
-                    if (!resolvedModule) {
-                        return null;
+                    if (!!resolvedModule) {
+                        symbol = this.semanticInfoChain.findExternalModule(resolvedModule.absoluteModuleIdentifier);
                     }
 
-                     symbol = this.semanticInfoChain.findExternalModule(resolvedModule.absoluteModuleIdentifier);
+                    // If not found, fallback to the old (manual) way of locating modules
+                    // - this is principally for consumers that manually added files to the compiler
+                    // without those files actually existing on disc (e.g. the test framework)
+					if (!symbol) {
+                        symbol = this.resolveExternalModuleReferenceLegacy(idText, currentFileName);
+                    } 
+                }
+            }
+
+            return symbol;
+        }
+
+        private resolveExternalModuleReferenceLegacy(idText: string, currentFileName: string): PullContainerSymbol {
+            var symbol: PullContainerSymbol = null;
+
+            // REVIEW: Technically, we shouldn't have to normalize here - we should normalize in addUnit.
+            // Still, normalizing here alows any language services to be free of assumptions
+            var path = getRootFilePath(switchToForwardSlashes(currentFileName));
+
+            // Search for external modules compiled (.d.ts or .ts files) starting with current files directory to root directory until we find the module
+            while (symbol === null && path != "") {
+                symbol = this.semanticInfoChain.findExternalModule(path + idText);
+                if (symbol === null) {
+                    if (path === '/') {
+                        path = '';
+                    } else {
+                        path = normalizePath(path + "..");
+                        path = path && path != '/' ? path + '/' : path;
+                    }
                 }
             }
 
