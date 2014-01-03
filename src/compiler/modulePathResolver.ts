@@ -90,33 +90,27 @@ module TypeScript {
             TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path resolver");
             TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path resolver");
 
+            debugger;
+
             // Search for the file
             var parentDirectory = this.host.getParentDirectory(referencingModulePath);
             var dtsFileName = moduleIdentifier + ".d.ts";
-            var tsFilePath = moduleIdentifier + ".ts";
+            var tsFileName = moduleIdentifier + ".ts";
 
             var importDetails: IResolvedImport;
 
             var start = new Date().getTime();
 
             do {
-                // Search for ".d.ts" file first
-                var currentFilePath = this.host.resolveRelativePath(dtsFileName, parentDirectory);
-                if (this.host.fileExists(currentFilePath)) {
-                    importDetails = {
-                        absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, parentDirectory),
-                        absoluteModulePath: currentFilePath
-                    };
+                importDetails = this.resolvePackagedModuleInDirectory(parentDirectory, moduleIdentifier, tsFileName, dtsFileName);
+
+                if (importDetails !== null) {
                     break;
                 }
 
-                // Search for ".ts" file
-                currentFilePath = this.host.resolveRelativePath(tsFilePath, parentDirectory);
-                if (this.host.fileExists(currentFilePath)) {
-                    importDetails = {
-                        absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, parentDirectory),
-                        absoluteModulePath: currentFilePath
-                    };
+                importDetails = this.resolveModuleInDirectory(parentDirectory, moduleIdentifier, tsFileName, dtsFileName);
+
+                if (importDetails !== null) {
                     break;
                 }
 
@@ -127,6 +121,62 @@ module TypeScript {
             TypeScript.fileResolutionImportFileSearchTime += new Date().getTime() - start;
 
             return importDetails;
+        }
+
+        private resolveModuleInDirectory(directoryPath: string, moduleIdentifier: string, tsFileName: string, dtsFileName: string): IResolvedImport {
+
+            // Search for ".d.ts" file first
+            var currentFilePath = this.host.resolveRelativePath(dtsFileName, directoryPath);
+            if (this.host.fileExists(currentFilePath)) {
+                return {
+                    absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, directoryPath),
+                    absoluteModulePath: currentFilePath
+                };
+            }
+
+            // Search for ".ts" file
+            currentFilePath = this.host.resolveRelativePath(tsFileName, directoryPath);
+            if (this.host.fileExists(currentFilePath)) {
+                return {
+                    absoluteModuleIdentifier: this.host.resolveRelativePath(moduleIdentifier, directoryPath),
+                    absoluteModulePath: currentFilePath
+                };
+            }
+
+            return null;
+        }
+
+        private resolvePackagedModuleInDirectory(directoryPath: string, moduleIdentifier: string, tsFileName: string, dtsFileName: string): IResolvedImport {
+            var modulesDirectory = this.host.resolveRelativePath("ts_modules", directoryPath);
+            var currentFilePath: string;
+            var resolvedImport: IResolvedImport;
+
+            // See if we've got a flat file in the modules directory
+            resolvedImport = this.resolveModuleInDirectory(modulesDirectory, moduleIdentifier, tsFileName, dtsFileName);
+
+            if (resolvedImport !== null) {
+                return resolvedImport;
+            }
+
+            // How about a package JSON file in a module directory?
+            var moduleDirectory = this.host.resolveRelativePath(moduleIdentifier, modulesDirectory);
+            var packageJson = this.host.resolveRelativePath("tspackage.json", moduleDirectory);
+
+            if (this.host.fileExists(packageJson)) {
+
+                // TODO: Read the package
+                return null;
+            }
+
+            // How about an index.ts in the module directory?
+            var indexFile = this.host.resolveRelativePath("index.ts", moduleDirectory);
+
+            if (this.host.fileExists(indexFile)) {
+                return {
+                    absoluteModuleIdentifier: this.host.resolveRelativePath("index", moduleDirectory),
+                    absoluteModulePath: indexFile
+                };
+            }            
         }
     }
 
