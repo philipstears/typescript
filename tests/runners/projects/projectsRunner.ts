@@ -135,7 +135,10 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
         this.inputFiles = files;
 
         // resolve file dependencies
+		var locator = new TypeScript.TopLevelImportResolverWithCache(this);
+
         var compiler = new TypeScript.TypeScriptCompiler();
+		compiler.setTopLevelImportResolver(locator);
         compiler.setCompilationSettings(this.compilationSettings);
 
         this.resolve(compiler.topLevelImportResolver());
