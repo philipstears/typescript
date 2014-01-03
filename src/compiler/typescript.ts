@@ -132,6 +132,10 @@ module TypeScript {
             return this._topLevelImportResolver;
         }
 
+		public setTopLevelImportResolver(newResolver: ITopLevelImportResolver) {
+			this._topLevelImportResolver = newResolver;
+		}
+
         public compilationSettings(): ImmutableCompilationSettings {
             return this._settings;
         }

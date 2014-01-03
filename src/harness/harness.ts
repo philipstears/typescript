@@ -15,6 +15,7 @@
 
 ///<reference path='..\compiler\io.ts'/>
 ///<reference path='..\compiler\typescript.ts'/>
+///<reference path='..\compiler\modulePathResolver.ts'/>
 ///<reference path='..\services\typescriptServices.ts' />
 ///<reference path='diff.ts'/>
 
@@ -810,6 +811,9 @@ module Harness {
 
             public resolve() {
                 var resolvedFiles: TypeScript.IResolvedFile[] = [];
+				var importLocator = new TypeScript.TopLevelImportResolverWithCache(this);
+
+				this.compiler.setTopLevelImportResolver(importLocator);
 
                 // This is the branch that we want to use to ensure proper testing of file resolution, though there is an alternative
                 if (!this.compiler.compilationSettings().noResolve()) {
@@ -818,7 +822,7 @@ module Harness {
                         this.inputFiles,
                         this,
                         this.compiler.compilationSettings().useCaseSensitiveFileResolution(),
-                        this.compiler.topLevelImportResolver()
+                        importLocator
                     );
                     resolvedFiles = resolutionResults.resolvedFiles;
                     resolutionResults.diagnostics.forEach(diag => this.addError(ErrorType.Resolution, diag));
