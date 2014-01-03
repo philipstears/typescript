@@ -39,12 +39,13 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
         this.errout = new Harness.Compiler.WriterAggregator();
     }
 
-    private resolve() {
+    private resolve(resolver: TypeScript.ITopLevelImportResolver) {
         var resolvedFiles: TypeScript.IResolvedFile[];
 
         // Resolve references
         var resolutionResults = TypeScript.ReferenceResolver.resolve(this.inputFiles, this,
-            this.compilationSettings.useCaseSensitiveFileResolution());
+            this.compilationSettings.useCaseSensitiveFileResolution(),
+            resolver);
         resolvedFiles = resolutionResults.resolvedFiles;
 
         // Populate any diagnostic messages generated during resolution
@@ -66,12 +67,8 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
     private compile(
         writeEmitFile: (path: string, contents: string, writeByteOrderMark: boolean) => void,
         writeDeclareFile: (path: string, contents: string, writeByteOrderMark: boolean) => void,
-        sourceMapEmitterCallback: Harness.SourceMapEmitterCallback) {
-
-        var compiler: TypeScript.TypeScriptCompiler;
-
-        compiler = new TypeScript.TypeScriptCompiler();
-        compiler.setCompilationSettings(this.compilationSettings);
+        sourceMapEmitterCallback: Harness.SourceMapEmitterCallback,
+        compiler: TypeScript.TypeScriptCompiler) {
 
         for (var iCode = 0; iCode < this.resolvedFiles.length; iCode++) {
             var code = this.resolvedFiles[iCode];
@@ -96,7 +93,7 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
             }
         }
 
-            for (var i = compiler.compile(path => TypeScript.IO.resolvePath(path)); i.moveNext();) {
+        for (var i = compiler.compile(path => TypeScript.IO.resolvePath(path)); i.moveNext();) {
             var result = i.current();
 
             result.diagnostics.forEach(d => this.addDiagnostic(d));
@@ -138,9 +135,12 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
         this.inputFiles = files;
 
         // resolve file dependencies
-        this.resolve();
+        var compiler = new TypeScript.TypeScriptCompiler();
+        compiler.setCompilationSettings(this.compilationSettings);
 
-        this.compile(writeEmitFiles, writeDeclareFile, sourceMapEmitterCallback);
+        this.resolve(compiler.topLevelImportResolver());
+
+        this.compile(writeEmitFiles, writeDeclareFile, sourceMapEmitterCallback, compiler);
     }
 
     public getResolvedFilePaths(): string[] {
@@ -530,7 +530,7 @@ class ProjectRunner extends RunnerBase {
                         });
                     }
 
-                    if (generateMapFiles && verifyEmitFiles && !spec.verifyFileNamesOnly ) {
+                    if (generateMapFiles && verifyEmitFiles && !spec.verifyFileNamesOnly) {
                         it("checks sourcemap record baseline", function () {
                             verifySourceMapRecord(batch.sourcemapRecord.lines.join("\r\n"), spec.sourceMapRecordBaseline);
                         });

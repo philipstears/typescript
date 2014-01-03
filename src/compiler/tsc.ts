@@ -64,10 +64,12 @@ module TypeScript {
                     return;
                 }
 
-                // Resolve the compilation environemnt
-                this.resolve();
+                // Resolve the compilation environment
+                var compiler = new TypeScriptCompiler(this.logger, this.compilationSettings);
 
-                this.compile();
+                this.resolve(compiler.topLevelImportResolver());
+
+                this.compile(compiler);
 
                 if (this.compilationSettings.gatherDiagnostics()) {
                     this.logger.log("");
@@ -122,7 +124,8 @@ module TypeScript {
             this.ioHost.quit(this.hasErrors ? 1 : 0);
         }
 
-        private resolve() {
+        private resolve(resolver: ITopLevelImportResolver) {
+
             // Resolve file dependencies, if requested
             var includeDefaultLibrary = !this.compilationSettings.noLib();
             var resolvedFiles: IResolvedFile[] = [];
@@ -131,7 +134,7 @@ module TypeScript {
 
             if (!this.compilationSettings.noResolve()) {
                 // Resolve references
-                var resolutionResults = ReferenceResolver.resolve(this.inputFiles, this, this.compilationSettings.useCaseSensitiveFileResolution());
+                var resolutionResults = ReferenceResolver.resolve(this.inputFiles, this, this.compilationSettings.useCaseSensitiveFileResolution(), resolver);
                 resolvedFiles = resolutionResults.resolvedFiles;
 
                 // Only include the library if useDefaultLib is set to true and did not see any 'no-default-lib' comments
@@ -183,9 +186,7 @@ module TypeScript {
         }
 
         // Returns true if compilation failed from some reason.
-        private compile(): void {
-            var compiler = new TypeScriptCompiler(this.logger, this.compilationSettings);
-
+        private compile(compiler: TypeScriptCompiler): void {
             this.resolvedFiles.forEach(resolvedFile => {
                 var sourceFile = this.getSourceFile(resolvedFile.path);
                 compiler.addFile(resolvedFile.path, sourceFile.scriptSnapshot, sourceFile.byteOrderMark, /*version:*/ 0, /*isOpen:*/ false, resolvedFile.referencedFiles);
@@ -534,8 +535,11 @@ module TypeScript {
                 // Clear out any source file data we've cached.
                 this.fileNameToSourceFile = new StringHashTable<SourceFile>();
 
+                // We need a compiler :-)
+                var compiler = new TypeScriptCompiler(this.logger, this.compilationSettings);
+
                 // Resolve file dependencies, if requested
-                this.resolve();
+                this.resolve(compiler.topLevelImportResolver());
 
                 // Check if any new files were added to the environment as a result of the file change
                 var oldFiles = lastResolvedFileSet;
@@ -588,7 +592,7 @@ module TypeScript {
                 }
 
                 // Trigger a new compilation
-                this.compile();
+                this.compile(compiler);
             };
 
             // Switch to using stdout for all error messages

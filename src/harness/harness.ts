@@ -817,7 +817,8 @@ module Harness {
                     var resolutionResults = TypeScript.ReferenceResolver.resolve(
                         this.inputFiles,
                         this,
-                        this.compiler.compilationSettings().useCaseSensitiveFileResolution()
+                        this.compiler.compilationSettings().useCaseSensitiveFileResolution(),
+                        this.compiler.topLevelImportResolver()
                     );
                     resolvedFiles = resolutionResults.resolvedFiles;
                     resolutionResults.diagnostics.forEach(diag => this.addError(ErrorType.Resolution, diag));

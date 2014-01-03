@@ -44,18 +44,16 @@ module TypeScript {
     export class ReferenceResolver {
         private inputFileNames: string[];
         private host: IReferenceResolverHost;
-        private topLevelImportResolver: ITopLevelImportResolver;
         private visited: IIndexable<string>;
 
-        constructor(inputFileNames: string[], host: IReferenceResolverHost, private useCaseSensitiveFileResolution: boolean) {
+        constructor(inputFileNames: string[], host: IReferenceResolverHost, private useCaseSensitiveFileResolution: boolean, private topLevelImportResolver: ITopLevelImportResolver) {
             this.inputFileNames = inputFileNames;
             this.host = host;
             this.visited = {};
-            this.topLevelImportResolver = new TopLevelImportResolverWithCache(host);
         }
 
-        public static resolve(inputFileNames: string[], host: IReferenceResolverHost, useCaseSensitiveFileResolution: boolean): ReferenceResolutionResult {
-            var resolver = new ReferenceResolver(inputFileNames, host, useCaseSensitiveFileResolution);
+        public static resolve(inputFileNames: string[], host: IReferenceResolverHost, useCaseSensitiveFileResolution: boolean, topLevelImportResolver: ITopLevelImportResolver): ReferenceResolutionResult {
+            var resolver = new ReferenceResolver(inputFileNames, host, useCaseSensitiveFileResolution, topLevelImportResolver);
             return resolver.resolveInputFiles();
         }
 
