@@ -777,7 +777,7 @@ module TypeScript {
                     // If not found, fallback to the old (manual) way of locating modules
                     // - this is principally for consumers that manually added files to the compiler
                     // without those files actually existing on disc (e.g. the test framework)
-					if (!symbol) {
+                    if (!symbol) {
                        symbol = this.resolveExternalModuleReferenceLegacy(idText, currentFileName);
                     } 
                 }
@@ -4454,7 +4454,7 @@ module TypeScript {
                 nodeType === SyntaxKind.PreIncrementExpression ||
                 nodeType === SyntaxKind.PreDecrementExpression);
 
-            // September 17, 2013: 4.14.1	The ++ and -- operators
+            // September 17, 2013: 4.14.1   The ++ and -- operators
             // These operators, in prefix or postfix form, require their operand to be of type Any,
             // the Number primitive type, or an enum type, and classified as a reference(section 4.1).
             var operandType = expression.type;
@@ -4478,7 +4478,7 @@ module TypeScript {
                 nodeType === SyntaxKind.PostIncrementExpression ||
                 nodeType === SyntaxKind.PostDecrementExpression);
 
-            // September 17, 2013: 4.14.1	The ++ and -- operators
+            // September 17, 2013: 4.14.1   The ++ and -- operators
             // These operators, in prefix or postfix form, require their operand to be of type Any,
             // the Number primitive type, or an enum type, and classified as a reference(section 4.1).
             var operandType = expression.type;
@@ -4521,7 +4521,7 @@ module TypeScript {
             }
 
             // September 17, 2013:
-            // 4.15.1	The *, /, %, –, <<, >>, >>>, &, ^, and | operators
+            // 4.15.1   The *, /, %, –, <<, >>, >>>, &, ^, and | operators
             // These operators require their operands to be of type Any, the Number primitive type,
             // or an enum type
             var lhsIsFit = this.isAnyOrNumberOrEnum(lhsType);
@@ -8899,8 +8899,8 @@ module TypeScript {
                 // Section 3.8.7 - Recursive Types
                 //  When comparing two types S and T for identity(section 3.8.2), subtype(section 3.8.3), and assignability(section 3.8.4) relationships, 
                 //  if either type originates in an infinitely expanding type reference, S and T are not compared by the rules in the preceding sections.Instead, for the relationship to be considered true,
-                //  -	S and T must both be type references to the same named type, and
-                //  -	the relationship in question must be true for each corresponding pair of type arguments in the type argument lists of S and T.
+                //  -   S and T must both be type references to the same named type, and
+                //  -   the relationship in question must be true for each corresponding pair of type arguments in the type argument lists of S and T.
 
                 var t1GenerativeTypeKind = t1EnclosingType ? t1.getGenerativeTypeClassification(t1EnclosingType) : GenerativeTypeClassification.Unknown;
                 var t2GenerativeTypeKind = t2EnclosingType ? t2.getGenerativeTypeClassification(t2EnclosingType) : GenerativeTypeClassification.Unknown;
@@ -9303,8 +9303,8 @@ module TypeScript {
                 // Section 3.8.7 - Recursive Types
                 //  When comparing two types S and T for identity(section 3.8.2), subtype(section 3.8.3), and assignability(section 3.8.4) relationships, 
                 //  if either type originates in an infinitely expanding type reference, S and T are not compared by the rules in the preceding sections.Instead, for the relationship to be considered true,
-                //  -	S and T must both be type references to the same named type, and
-                //  -	the relationship in question must be true for each corresponding pair of type arguments in the type argument lists of S and T.
+                //  -   S and T must both be type references to the same named type, and
+                //  -   the relationship in question must be true for each corresponding pair of type arguments in the type argument lists of S and T.
 
                 var sourceGenerativeTypeKind = sourceEnclosingType ? source.getGenerativeTypeClassification(sourceEnclosingType) : GenerativeTypeClassification.Unknown;
                 var targetGenerativeTypeKind = targetEnclosingType ? target.getGenerativeTypeClassification(targetEnclosingType) : GenerativeTypeClassification.Unknown;
@@ -9611,8 +9611,8 @@ module TypeScript {
             //  assignability(section 3.8.4) relationships, 
             //  if either type originates in an infinitely expanding type reference, S and T are not compared
             //  by the rules in the preceding sections.Instead, for the relationship to be considered true,
-            //  -	S and T must both be type references to the same named type, and
-            //  -	the relationship in question must be true for each corresponding pair of type arguments in
+            //  -   S and T must both be type references to the same named type, and
+            //  -   the relationship in question must be true for each corresponding pair of type arguments in
             //      the type argument lists of S and T.
 
             var widenedTargetType = this.widenType(targetType);
@@ -9625,7 +9625,7 @@ module TypeScript {
                 var sourceTypeNamedTypeReference = PullHelpers.getRootType(sourceType);
                 var targetTypeNamedTypeReference = PullHelpers.getRootType(targetType);
 
-                //  -	S and T must both be type references to the same named type, and
+                //  -   S and T must both be type references to the same named type, and
                 if (sourceTypeNamedTypeReference != targetTypeNamedTypeReference) {
                     comparisonCache.setValueAt(sourceType.pullSymbolID, targetType.pullSymbolID, false);
                     if (comparisonInfo) {
@@ -9663,7 +9663,7 @@ module TypeScript {
                     comparisonInfoTypeArgumentsCheck = new TypeComparisonInfo(comparisonInfo);
                 }
                 for (var i = 0; i < sourceTypeArguments.length; i++) {
-                    //  -	the relationship in question must be true for each corresponding pair of type arguments
+                    //  -   the relationship in question must be true for each corresponding pair of type arguments
                     //      in the type argument lists of S and T.
                     if (!this.sourceIsRelatableToTarget(sourceTypeArguments[i], targetTypeArguments[i], assignableTo, comparisonCache, ast, context, comparisonInfo, isComparingInstantiatedSignatures)) {
                         if (comparisonInfo) {
@@ -9695,8 +9695,8 @@ module TypeScript {
             //  assignability(section 3.8.4) relationships, 
             //  if either type originates in an infinitely expanding type reference, S and T are not compared
             //  by the rules in the preceding sections.Instead, for the relationship to be considered true,
-            //  -	S and T must both be type references to the same named type, and
-            //  -	the relationship in question must be true for each corresponding pair of type arguments in
+            //  -   S and T must both be type references to the same named type, and
+            //  -   the relationship in question must be true for each corresponding pair of type arguments in
             //      the type argument lists of S and T.
 
             var widenedTargetType = this.widenType(targetType);
@@ -9706,7 +9706,7 @@ module TypeScript {
             if ((widenedSourceType != this.semanticInfoChain.anyTypeSymbol) &&
                 (widenedTargetType != this.semanticInfoChain.anyTypeSymbol)) {
 
-                //  -	S and T must both be type references to the same named type, and
+                //  -   S and T must both be type references to the same named type, and
                 var sourceTypeNamedTypeReference = PullHelpers.getRootType(sourceType);
                 var targetTypeNamedTypeReference = PullHelpers.getRootType(targetType);
                 if (sourceTypeNamedTypeReference != targetTypeNamedTypeReference) {
@@ -9714,7 +9714,7 @@ module TypeScript {
                     return false;
                 }
 
-                //  -	the relationship in question must be true for each corresponding pair of type arguments in
+                //  -   the relationship in question must be true for each corresponding pair of type arguments in
                 //      the type argument lists of S and T.
                 var sourceTypeArguments = sourceType.getTypeArguments();
                 var targetTypeArguments = targetType.getTypeArguments();
@@ -10641,8 +10641,8 @@ module TypeScript {
             // Section 3.8.7 - Recursive Types
             // Likewise, when making type inferences(section 3.8.6) from a type S to a type T, 
             // if either type originates in an infinitely expanding type reference, then
-            // •	if S and T are type references to the same named type, inferences are made from each type argument in S to each type argument in T,
-            // •	otherwise, no inferences are made.
+            // •    if S and T are type references to the same named type, inferences are made from each type argument in S to each type argument in T,
+            // •    otherwise, no inferences are made.
             var expressionTypeNamedTypeReference = PullHelpers.getRootType(expressionType);
             var parameterTypeNamedTypeReference = PullHelpers.getRootType(parameterType);
             if (expressionTypeNamedTypeReference != parameterTypeNamedTypeReference) {
