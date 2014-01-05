@@ -90,12 +90,14 @@ module TypeScript {
             TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path locator");
             TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path locator");
 
+			debugger;
+
             // Search for the file
             var parentDirectory = this.host.getParentDirectory(referencingModulePath);
             var dtsFileName = moduleIdentifier + ".d.ts";
             var tsFileName = moduleIdentifier + ".ts";
 
-            var importDetails: IResolvedImport;
+            var importDetails: IResolvedImport = null;
 
             var start = new Date().getTime();
 
@@ -175,6 +177,8 @@ module TypeScript {
                     absoluteModulePath: indexFile
                 };
             }            
+
+			return null;
         }
     }
 
