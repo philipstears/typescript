@@ -90,8 +90,6 @@ module TypeScript {
             TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path resolver");
             TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path resolver");
 
-            debugger;
-
             // Search for the file
             var parentDirectory = this.host.getParentDirectory(referencingModulePath);
             var dtsFileName = moduleIdentifier + ".d.ts";

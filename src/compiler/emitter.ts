@@ -43,6 +43,7 @@ module TypeScript {
         private _diagnostic: Diagnostic = null;
 
         private _settings: ImmutableCompilationSettings = null;
+        private _locator: ITopLevelImportResolver = null;
         private _commonDirectoryPath = "";
         private _sharedOutputFile = "";
         private _sourceRootDirectory = "";
@@ -51,6 +52,7 @@ module TypeScript {
 
         public diagnostic(): Diagnostic { return this._diagnostic; }
 
+        public locator() { return this._locator; }
         public commonDirectoryPath() { return this._commonDirectoryPath; }
         public sharedOutputFile() { return this._sharedOutputFile; }
         public sourceRootDirectory() { return this._sourceRootDirectory; }
@@ -61,6 +63,8 @@ module TypeScript {
 
         constructor(compiler: TypeScriptCompiler,
             public resolvePath: (path: string) => string) {
+
+            this._locator = compiler.topLevelImportResolver();
 
             var settings = compiler.compilationSettings();
             this._settings = settings;
@@ -315,7 +319,7 @@ module TypeScript {
                 var aliasAST = importDeclAST.moduleReference;
 
                 if (isExternalModuleReference) {
-                    this.writeToOutput("require(" + (<ExternalModuleReference>aliasAST).stringLiteral.text() + ")");
+                    this.writeToOutput("require(" + this.rewriteExternalModulePath(<ExternalModuleReference>aliasAST) + ")");
                 }
                 else {
                     this.emitJavascript((<ModuleNameModuleReference>aliasAST).moduleName, false);
@@ -335,6 +339,27 @@ module TypeScript {
                 this.writeToOutput(";");
             }
             this.emitComments(importDeclAST, false);
+        }
+
+        private rewriteExternalModulePath(reference: ExternalModuleReference): string {
+
+            // 1. This only applies to top-level imported modules; relative paths, and absolute paths
+            //    should not be modified.
+            // 2. This does not apply to declaration files, declaration files are used to bring
+            //    in JavaScript dependencies, and the JavaScript dependency to which a declaration
+            //    refers ought to already be resolvable by the execution-environment (e.g. node/requirejs)
+            // 3. If the out directory option has been specified, TS will copy all imported modules to
+            //    the out dir, preserving the relative dir structure, so this still applies
+            var referencingFile = this.document.fileName;
+
+            var referenceName = reference.stringLiteral.valueText();
+            var referencePath = this.emitOptions.locator().resolve(referencingFile, referenceName);
+
+            var outputFileName = this.emittingFileName;
+
+            debugger;
+
+            return '\'' + referenceName.replace('\'', '\\\'') + '\'';
         }
 
         public createSourceMapper(document: Document, jsFileName: string, jsFile: TextWriter, sourceMapOut: TextWriter, resolvePath: (path: string) => string) {
@@ -511,7 +536,7 @@ module TypeScript {
 
         public emitArrayLiteralExpression(arrayLiteral: ArrayLiteralExpression) {
             this.recordSourceMappingStart(arrayLiteral);
-            
+
             // Try to preserve the newlines between elements that the user had.
             this.writeToOutput("[");
             this.emitCommaSeparatedList(arrayLiteral, arrayLiteral.expressions, /*buffer:*/ "", /*preserveNewLines:*/ true);
@@ -803,7 +828,7 @@ module TypeScript {
                         }
 
                         importList += importStatementDecl.name;
-                        dependencyList += (<ExternalModuleReference>importStatementAST.moduleReference).stringLiteral.text();
+                        dependencyList += this.rewriteExternalModulePath(<ExternalModuleReference>importStatementAST.moduleReference);
                     }
                 }
             }
@@ -2170,7 +2195,7 @@ module TypeScript {
                 // set it in the ExportAssignment emit method
                 this.setExportAssignmentIdentifier(null);
 
-                if(this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous) {
+                if (this.emitOptions.compilationSettings().moduleGenTarget() === ModuleGenTarget.Asynchronous) {
                     this.indenter.increaseIndent();
                 }
 
@@ -2821,7 +2846,7 @@ module TypeScript {
             if (lastIndex - startingIndex < 1) { // Member expression emits alteast two identifiers
                 startingIndex = lastIndex - 1;
                 Debug.assert(startingIndex >= 0);
-            } 
+            }
 
             this.emitDottedNameMemberAccessExpressionWorker(expression, potentialPath, startingIndex, lastIndex);
             this.emitComments(expression, false);
@@ -3273,7 +3298,7 @@ module TypeScript {
         }
 
         public shouldEmitEnumDeclaration(declaration: EnumDeclaration): boolean {
-            return declaration.preComments() !== null || ! enumIsElided(declaration);
+            return declaration.preComments() !== null || !enumIsElided(declaration);
         }
 
         public emitEnumDeclaration(declaration: EnumDeclaration): void {
@@ -3471,41 +3496,41 @@ module TypeScript {
                     return this.emitMemberAccessExpression(<MemberAccessExpression>ast);
                 case SyntaxKind.QualifiedName:
                     return this.emitQualifiedName(<QualifiedName>ast);
-                case SyntaxKind.CommaExpression: 
-                case SyntaxKind.AssignmentExpression: 
-                case SyntaxKind.AddAssignmentExpression: 
-                case SyntaxKind.SubtractAssignmentExpression: 
-                case SyntaxKind.MultiplyAssignmentExpression: 
-                case SyntaxKind.DivideAssignmentExpression: 
-                case SyntaxKind.ModuloAssignmentExpression: 
-                case SyntaxKind.AndAssignmentExpression: 
-                case SyntaxKind.ExclusiveOrAssignmentExpression: 
-                case SyntaxKind.OrAssignmentExpression: 
-                case SyntaxKind.LeftShiftAssignmentExpression: 
-                case SyntaxKind.SignedRightShiftAssignmentExpression: 
-                case SyntaxKind.UnsignedRightShiftAssignmentExpression: 
-                case SyntaxKind.LogicalOrExpression: 
-                case SyntaxKind.LogicalAndExpression: 
-                case SyntaxKind.BitwiseOrExpression: 
-                case SyntaxKind.BitwiseExclusiveOrExpression: 
-                case SyntaxKind.BitwiseAndExpression: 
-                case SyntaxKind.EqualsWithTypeConversionExpression: 
-                case SyntaxKind.NotEqualsWithTypeConversionExpression: 
-                case SyntaxKind.EqualsExpression: 
-                case SyntaxKind.NotEqualsExpression: 
-                case SyntaxKind.LessThanExpression: 
-                case SyntaxKind.GreaterThanExpression: 
-                case SyntaxKind.LessThanOrEqualExpression: 
-                case SyntaxKind.GreaterThanOrEqualExpression: 
-                case SyntaxKind.InstanceOfExpression: 
-                case SyntaxKind.InExpression: 
-                case SyntaxKind.LeftShiftExpression: 
-                case SyntaxKind.SignedRightShiftExpression: 
-                case SyntaxKind.UnsignedRightShiftExpression: 
-                case SyntaxKind.MultiplyExpression: 
-                case SyntaxKind.DivideExpression: 
-                case SyntaxKind.ModuloExpression: 
-                case SyntaxKind.AddExpression: 
+                case SyntaxKind.CommaExpression:
+                case SyntaxKind.AssignmentExpression:
+                case SyntaxKind.AddAssignmentExpression:
+                case SyntaxKind.SubtractAssignmentExpression:
+                case SyntaxKind.MultiplyAssignmentExpression:
+                case SyntaxKind.DivideAssignmentExpression:
+                case SyntaxKind.ModuloAssignmentExpression:
+                case SyntaxKind.AndAssignmentExpression:
+                case SyntaxKind.ExclusiveOrAssignmentExpression:
+                case SyntaxKind.OrAssignmentExpression:
+                case SyntaxKind.LeftShiftAssignmentExpression:
+                case SyntaxKind.SignedRightShiftAssignmentExpression:
+                case SyntaxKind.UnsignedRightShiftAssignmentExpression:
+                case SyntaxKind.LogicalOrExpression:
+                case SyntaxKind.LogicalAndExpression:
+                case SyntaxKind.BitwiseOrExpression:
+                case SyntaxKind.BitwiseExclusiveOrExpression:
+                case SyntaxKind.BitwiseAndExpression:
+                case SyntaxKind.EqualsWithTypeConversionExpression:
+                case SyntaxKind.NotEqualsWithTypeConversionExpression:
+                case SyntaxKind.EqualsExpression:
+                case SyntaxKind.NotEqualsExpression:
+                case SyntaxKind.LessThanExpression:
+                case SyntaxKind.GreaterThanExpression:
+                case SyntaxKind.LessThanOrEqualExpression:
+                case SyntaxKind.GreaterThanOrEqualExpression:
+                case SyntaxKind.InstanceOfExpression:
+                case SyntaxKind.InExpression:
+                case SyntaxKind.LeftShiftExpression:
+                case SyntaxKind.SignedRightShiftExpression:
+                case SyntaxKind.UnsignedRightShiftExpression:
+                case SyntaxKind.MultiplyExpression:
+                case SyntaxKind.DivideExpression:
+                case SyntaxKind.ModuloExpression:
+                case SyntaxKind.AddExpression:
                 case SyntaxKind.SubtractExpression:
                     return this.emitBinaryExpression(<BinaryExpression>ast);
                 case SyntaxKind.ConditionalExpression:
