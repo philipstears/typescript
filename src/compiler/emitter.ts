@@ -351,17 +351,17 @@ module TypeScript {
             // 3. If the out directory option has been specified, TS will copy all imported modules to
             //    the out dir, preserving the relative dir structure, so this still applies
             var referencingFile = this.document.fileName;
-			var referencingFileDir = IO.dirName(referencingFile);
+            var referencingFileDir = IO.dirName(referencingFile);
 
             var referenceName = reference.stringLiteral.valueText();
             var referencePath = this.emitOptions.locator().resolve(referencingFile, referenceName);
-			var referenceDir = IO.dirName(referencePath.absoluteModulePath);
+            var referenceDir = IO.dirName(referencePath.absoluteModulePath);
 
-			var referencePathComponents = TypeScript.getPathComponents(referencePath.absoluteModuleIdentifier);
-			var referenceFileName = referencePathComponents[referencePathComponents.length - 1];
+            var referencePathComponents = TypeScript.getPathComponents(referencePath.absoluteModuleIdentifier);
+            var referenceFileName = referencePathComponents[referencePathComponents.length - 1];
 
-			var relativeDir = TypeScript.getRelativePathToFixedPath(referencingFileDir, referenceDir);
-			var relativeReferenceName = './' + relativeDir + '/' + referenceFileName;
+            var relativeDir = TypeScript.getRelativePathToFixedPath(referencingFileDir, referenceDir);
+            var relativeReferenceName = './' + relativeDir + '/' + referenceFileName;
 
             return '\'' + relativeReferenceName.replace('\'', '\\\'') + '\'';
         }
