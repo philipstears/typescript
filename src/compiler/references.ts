@@ -15,7 +15,7 @@
 ///<reference path='types.ts' />
 ///<reference path='pathUtils.ts' />
 ///<reference path='referenceResolution.ts' />
-///<reference path='modulePathResolver.ts' />
+///<reference path='importLocator.ts' />
 ///<reference path='precompile.ts' />
 ///<reference path='referenceResolver.ts' />
 ///<reference path='declarationEmitter.ts' />

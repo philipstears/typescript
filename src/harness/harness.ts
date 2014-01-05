@@ -15,7 +15,7 @@
 
 ///<reference path='..\compiler\io.ts'/>
 ///<reference path='..\compiler\typescript.ts'/>
-///<reference path='..\compiler\modulePathResolver.ts'/>
+///<reference path='..\compiler\importLocator.ts'/>
 ///<reference path='..\services\typescriptServices.ts' />
 ///<reference path='diff.ts'/>
 
