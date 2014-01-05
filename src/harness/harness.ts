@@ -811,9 +811,9 @@ module Harness {
 
             public resolve() {
                 var resolvedFiles: TypeScript.IResolvedFile[] = [];
-				var importLocator = new TypeScript.TopLevelImportResolverWithCache(this);
+				var importLocator = new TypeScript.ImportLocatorWithCache(this);
 
-				this.compiler.setTopLevelImportResolver(importLocator);
+				this.compiler.setImportLocator(importLocator);
 
                 // This is the branch that we want to use to ensure proper testing of file resolution, though there is an alternative
                 if (!this.compiler.compilationSettings().noResolve()) {

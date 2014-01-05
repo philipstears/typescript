@@ -39,7 +39,7 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
         this.errout = new Harness.Compiler.WriterAggregator();
     }
 
-    private resolve(resolver: TypeScript.ITopLevelImportResolver) {
+    private resolve(resolver: TypeScript.IImportLocator) {
         var resolvedFiles: TypeScript.IResolvedFile[];
 
         // Resolve references
@@ -135,13 +135,13 @@ class HarnessBatch implements TypeScript.IReferenceResolverHost {
         this.inputFiles = files;
 
         // resolve file dependencies
-		var locator = new TypeScript.TopLevelImportResolverWithCache(this);
+		var locator = new TypeScript.ImportLocatorWithCache(this);
 
         var compiler = new TypeScript.TypeScriptCompiler();
-		compiler.setTopLevelImportResolver(locator);
+		compiler.setImportLocator(locator);
         compiler.setCompilationSettings(this.compilationSettings);
 
-        this.resolve(compiler.topLevelImportResolver());
+        this.resolve(compiler.importLocator());
 
         this.compile(writeEmitFiles, writeDeclareFile, sourceMapEmitterCallback, compiler);
     }

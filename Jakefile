@@ -37,6 +37,7 @@ var compilerSources = [
 	"references.ts",
 	"referenceResolution.ts",
 	"referenceResolver.ts",
+	"importLocator.ts",
 	"settings.ts",
 	"sourceMapping.ts",
 	"syntaxTreeToAstVisitor.ts",

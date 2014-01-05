@@ -46,14 +46,14 @@ module TypeScript {
         private host: IReferenceResolverHost;
         private visited: IIndexable<string>;
 
-        constructor(inputFileNames: string[], host: IReferenceResolverHost, private useCaseSensitiveFileResolution: boolean, private topLevelImportResolver: ITopLevelImportResolver) {
+        constructor(inputFileNames: string[], host: IReferenceResolverHost, private useCaseSensitiveFileResolution: boolean, private importLocator: IImportLocator) {
             this.inputFileNames = inputFileNames;
             this.host = host;
             this.visited = {};
         }
 
-        public static resolve(inputFileNames: string[], host: IReferenceResolverHost, useCaseSensitiveFileResolution: boolean, topLevelImportResolver: ITopLevelImportResolver): ReferenceResolutionResult {
-            var resolver = new ReferenceResolver(inputFileNames, host, useCaseSensitiveFileResolution, topLevelImportResolver);
+        public static resolve(inputFileNames: string[], host: IReferenceResolverHost, useCaseSensitiveFileResolution: boolean, importLocator: IImportLocator): ReferenceResolutionResult {
+            var resolver = new ReferenceResolver(inputFileNames, host, useCaseSensitiveFileResolution, importLocator);
             return resolver.resolveInputFiles();
         }
 
@@ -122,7 +122,7 @@ module TypeScript {
                 return this.resolveIncludedFile(path, referenceLocation, resolutionResult);
             }
             else {
-                var resolvedImport = this.topLevelImportResolver.resolve(referenceLocation.filePath, path);
+                var resolvedImport = this.importLocator.resolve(referenceLocation.filePath, path);
 
                 if (!resolvedImport) {
                     // Cannot find file import, do not report an error, the typeChecker will report it later on

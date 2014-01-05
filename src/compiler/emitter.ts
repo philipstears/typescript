@@ -43,7 +43,7 @@ module TypeScript {
         private _diagnostic: Diagnostic = null;
 
         private _settings: ImmutableCompilationSettings = null;
-        private _locator: ITopLevelImportResolver = null;
+        private _locator: IImportLocator = null;
         private _commonDirectoryPath = "";
         private _sharedOutputFile = "";
         private _sourceRootDirectory = "";
@@ -64,7 +64,7 @@ module TypeScript {
         constructor(compiler: TypeScriptCompiler,
             public resolvePath: (path: string) => string) {
 
-            this._locator = compiler.topLevelImportResolver();
+            this._locator = compiler.importLocator();
 
             var settings = compiler.compilationSettings();
             this._settings = settings;

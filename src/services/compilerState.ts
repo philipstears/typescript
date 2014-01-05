@@ -280,7 +280,7 @@ module TypeScript.Services {
 
             // let the compiler know about the current compilation settings.  
             this.compiler.setCompilationSettings(compilationSettings);
-			this.compiler.setTopLevelImportResolver(new TopLevelImportResolverWithCache(this.host));
+			this.compiler.setImportLocator(new ImportLocatorWithCache(this.host));
 
             // Now, remove any files from the compiler that are no longer in hte host.
             var compilerFileNames = this.compiler.fileNames();

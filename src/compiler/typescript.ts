@@ -117,23 +117,23 @@ module TypeScript {
 	
     export class TypeScriptCompiler {
         private semanticInfoChain: SemanticInfoChain = null;
-        private _topLevelImportResolver: ITopLevelImportResolver = null;
+        private _importLocator: IImportLocator = null;
 
         constructor(public logger: ILogger = new NullLogger(),
                     private _settings: ImmutableCompilationSettings = ImmutableCompilationSettings.defaultSettings()) {
             this.semanticInfoChain = new SemanticInfoChain(this, logger);
         }
 
-        public topLevelImportResolver(): ITopLevelImportResolver {
-            if (this._topLevelImportResolver === null) {
-                this._topLevelImportResolver = new TopLevelImportResolverWithCache(new StandardResolverHost(IO));
+        public importLocator(): IImportLocator {
+            if (this._importLocator === null) {
+                this._importLocator = new ImportLocatorWithCache(new StandardImportLocatorHost(IO));
             }
 
-            return this._topLevelImportResolver;
+            return this._importLocator;
         }
 
-		public setTopLevelImportResolver(newResolver: ITopLevelImportResolver) {
-			this._topLevelImportResolver = newResolver;
+		public setImportLocator(locator: IImportLocator) {
+			this._importLocator = locator;
 		}
 
         public compilationSettings(): ImmutableCompilationSettings {

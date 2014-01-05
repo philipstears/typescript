@@ -67,7 +67,7 @@ module TypeScript {
                 // Resolve the compilation environment
                 var compiler = new TypeScriptCompiler(this.logger, this.compilationSettings);
 
-                this.resolve(compiler.topLevelImportResolver());
+                this.resolve(compiler.importLocator());
 
                 this.compile(compiler);
 
@@ -124,7 +124,7 @@ module TypeScript {
             this.ioHost.quit(this.hasErrors ? 1 : 0);
         }
 
-        private resolve(resolver: ITopLevelImportResolver) {
+        private resolve(locator: IImportLocator) {
 
             // Resolve file dependencies, if requested
             var includeDefaultLibrary = !this.compilationSettings.noLib();
@@ -134,7 +134,7 @@ module TypeScript {
 
             if (!this.compilationSettings.noResolve()) {
                 // Resolve references
-                var resolutionResults = ReferenceResolver.resolve(this.inputFiles, this, this.compilationSettings.useCaseSensitiveFileResolution(), resolver);
+                var resolutionResults = ReferenceResolver.resolve(this.inputFiles, this, this.compilationSettings.useCaseSensitiveFileResolution(), locator);
                 resolvedFiles = resolutionResults.resolvedFiles;
 
                 // Only include the library if useDefaultLib is set to true and did not see any 'no-default-lib' comments
@@ -539,7 +539,7 @@ module TypeScript {
                 var compiler = new TypeScriptCompiler(this.logger, this.compilationSettings);
 
                 // Resolve file dependencies, if requested
-                this.resolve(compiler.topLevelImportResolver());
+                this.resolve(compiler.importLocator());
 
                 // Check if any new files were added to the environment as a result of the file change
                 var oldFiles = lastResolvedFileSet;

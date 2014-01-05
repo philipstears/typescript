@@ -2,7 +2,7 @@
 /// <reference path="io.ts" />
 
 module TypeScript {
-    export class StandardResolverHost implements ITopLevelImportResolverHost {
+    export class StandardImportLocatorHost implements IImportLocatorHost {
         constructor(private ioHost: IIO) {
             this.ioHost = this.ioHost || IO;
         }
@@ -72,23 +72,23 @@ module TypeScript {
         absoluteModulePath: string;        
     }
 
-    export interface ITopLevelImportResolverHost {
+    export interface IImportLocatorHost {
         resolveRelativePath(path: string, directory: string): string;
         fileExists(path: string): boolean;
         getParentDirectory(path: string): string;
     }
 
-    export interface ITopLevelImportResolver {
+    export interface IImportLocator {
         resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport;
     }
 
-    class TopLevelImportResolver implements ITopLevelImportResolver {
-        constructor(private host: ITopLevelImportResolverHost) {
+    class ImportLocator implements IImportLocator {
+        constructor(private host: IImportLocatorHost) {
         }
 
         resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
-            TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path resolver");
-            TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path resolver");
+            TypeScript.Debug.assert(!isRelative(moduleIdentifier), "Relative paths should not get to the module path locator");
+            TypeScript.Debug.assert(!isRooted(moduleIdentifier), "Rooted paths should not get to the module path locator");
 
             // Search for the file
             var parentDirectory = this.host.getParentDirectory(referencingModulePath);
@@ -178,17 +178,17 @@ module TypeScript {
         }
     }
 
-    class DirectoryResolverWithCache implements ITopLevelImportResolver {
+    class DirectoryLocatorWithCache implements IImportLocator {
         private modules = new StringHashTable<IResolvedImport>();
 
-        constructor(private resolver: ITopLevelImportResolver) {
+        constructor(private locator: IImportLocator) {
         }
 
         resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
             var modulePath = this.modules.lookup(moduleIdentifier);
 
             if (!modulePath) {
-                modulePath = this.resolver.resolve(referencingModulePath, moduleIdentifier);
+                modulePath = this.locator.resolve(referencingModulePath, moduleIdentifier);
                 this.modules.add(moduleIdentifier, modulePath);
             }
 
@@ -196,24 +196,24 @@ module TypeScript {
         }
     }
 
-    export class TopLevelImportResolverWithCache implements ITopLevelImportResolver {
-        private directories = new StringHashTable<DirectoryResolverWithCache>();
-        private resolver: ITopLevelImportResolver;
+    export class ImportLocatorWithCache implements IImportLocator {
+        private directories = new StringHashTable<DirectoryLocatorWithCache>();
+        private locator: IImportLocator;
 
-        constructor(private host: ITopLevelImportResolverHost) {
-            this.resolver = new TopLevelImportResolver(host);
+        constructor(private host: IImportLocatorHost) {
+            this.locator = new ImportLocator(host);
         }
 
         resolve(referencingModulePath: string, moduleIdentifier: string): IResolvedImport {
             var directoryPath = this.host.getParentDirectory(referencingModulePath);
-            var directoryResolver = this.directories.lookup(directoryPath);
+            var directoryLocator = this.directories.lookup(directoryPath);
 
-            if (!directoryResolver) {
-                directoryResolver = new DirectoryResolverWithCache(this.resolver);
-                this.directories.add(directoryPath, directoryResolver);
+            if (!directoryLocator) {
+                directoryLocator = new DirectoryLocatorWithCache(this.locator);
+                this.directories.add(directoryPath, directoryLocator);
             }
 
-            return directoryResolver.resolve(referencingModulePath, moduleIdentifier);
+            return directoryLocator.resolve(referencingModulePath, moduleIdentifier);
         }
     }
 }

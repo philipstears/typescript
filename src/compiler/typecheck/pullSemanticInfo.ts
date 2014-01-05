@@ -574,7 +574,7 @@ module TypeScript {
 
         public getResolver(): PullTypeResolver {
             if (!this._resolver) {
-                this._resolver = new PullTypeResolver(this.compiler.compilationSettings(), this.compiler.topLevelImportResolver(), this);
+                this._resolver = new PullTypeResolver(this.compiler.compilationSettings(), this.compiler.importLocator(), this);
             }
 
             return this._resolver;

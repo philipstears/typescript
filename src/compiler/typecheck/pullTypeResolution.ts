@@ -77,7 +77,7 @@ module TypeScript {
         private subtypeCache: IBitMatrix = BitMatrix.getBitMatrix(/*allowUndefinedValues:*/ true);
         private identicalCache: IBitMatrix = BitMatrix.getBitMatrix(/*allowUndefinedValues:*/ true);
 
-        constructor(private compilationSettings: ImmutableCompilationSettings, private topLevelImportResolver: ITopLevelImportResolver, public semanticInfoChain: SemanticInfoChain) { }
+        constructor(private compilationSettings: ImmutableCompilationSettings, private importLocator: IImportLocator, public semanticInfoChain: SemanticInfoChain) { }
 
         private cachedArrayInterfaceType() {
             if (!this._cachedArrayInterfaceType) {
@@ -768,7 +768,7 @@ module TypeScript {
                 symbol = this.semanticInfoChain.findAmbientExternalModuleInGlobalContext(quoteStr(originalIdText));
                 
                 if (!symbol) {
-                    var resolvedModule = this.topLevelImportResolver.resolve(currentFileName, idText);
+                    var resolvedModule = this.importLocator.resolve(currentFileName, idText);
 
                     if (!!resolvedModule) {
                         symbol = this.semanticInfoChain.findExternalModule(resolvedModule.absoluteModuleIdentifier);
@@ -778,7 +778,7 @@ module TypeScript {
                     // - this is principally for consumers that manually added files to the compiler
                     // without those files actually existing on disc (e.g. the test framework)
 					if (!symbol) {
-                        symbol = this.resolveExternalModuleReferenceLegacy(idText, currentFileName);
+                       symbol = this.resolveExternalModuleReferenceLegacy(idText, currentFileName);
                     } 
                 }
             }
