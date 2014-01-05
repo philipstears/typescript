@@ -351,15 +351,19 @@ module TypeScript {
             // 3. If the out directory option has been specified, TS will copy all imported modules to
             //    the out dir, preserving the relative dir structure, so this still applies
             var referencingFile = this.document.fileName;
+			var referencingFileDir = IO.dirName(referencingFile);
 
             var referenceName = reference.stringLiteral.valueText();
             var referencePath = this.emitOptions.locator().resolve(referencingFile, referenceName);
+			var referenceDir = IO.dirName(referencePath.absoluteModulePath);
 
-            var outputFileName = this.emittingFileName;
+			var referencePathComponents = TypeScript.getPathComponents(referencePath.absoluteModuleIdentifier);
+			var referenceFileName = referencePathComponents[referencePathComponents.length - 1];
 
-            debugger;
+			var relativeDir = TypeScript.getRelativePathToFixedPath(referencingFileDir, referenceDir);
+			var relativeReferenceName = './' + relativeDir + '/' + referenceFileName;
 
-            return '\'' + referenceName.replace('\'', '\\\'') + '\'';
+            return '\'' + relativeReferenceName.replace('\'', '\\\'') + '\'';
         }
 
         public createSourceMapper(document: Document, jsFileName: string, jsFile: TextWriter, sourceMapOut: TextWriter, resolvePath: (path: string) => string) {
