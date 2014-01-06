@@ -355,6 +355,10 @@ module TypeScript {
 
             var referenceName = reference.stringLiteral.valueText();
             var referencePath = this.emitOptions.locator().resolve(referencingFile, referenceName);
+
+            if ( isDTSFile(referencePath.absoluteModulePath) ) {
+                return reference.stringLiteral.text();
+            }
             var referenceDir = IO.dirName(referencePath.absoluteModulePath);
 
             var referencePathComponents = TypeScript.getPathComponents(referencePath.absoluteModuleIdentifier);
