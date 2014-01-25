@@ -164,8 +164,18 @@ module TypeScript {
 
             if (this.host.fileExists(packageJson)) {
 
-                // TODO: Read the package
-                return null;
+				var io = IO;
+				var contents = io.readFile(packageJson, null).contents; 
+				var contentsJson = JSON.parse(contents);
+				var packageEntryPoint = <string>(contentsJson.main) || "index";
+				var packageEntryPointPath = this.host.resolveRelativePath(packageEntryPoint + ".ts", moduleDirectory);
+
+				if (this.host.fileExists(packageEntryPointPath)) {
+					return {
+						absoluteModuleIdentifier: io.dirName(packageEntryPointPath) + "/" + packageEntryPoint,
+						absoluteModulePath: packageEntryPointPath
+					};
+				}
             }
 
             // How about an index.ts in the module directory?
