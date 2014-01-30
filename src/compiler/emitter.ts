@@ -354,6 +354,11 @@ module TypeScript {
             var referencingFileDir = IO.dirName(referencingFile);
 
             var referenceName = reference.stringLiteral.valueText();
+
+			if (isRelative(referenceName) || isRooted(referenceName)) {
+				return reference.stringLiteral.text();
+			}
+			
             var referencePath = this.emitOptions.locator().resolve(referencingFile, referenceName);
 
             if ( isDTSFile(referencePath.absoluteModulePath) ) {
