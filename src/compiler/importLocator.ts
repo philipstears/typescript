@@ -176,6 +176,15 @@ module TypeScript {
 						absoluteModulePath: packageEntryPointPath
 					};
 				}
+
+				packageEntryPointPath = this.host.resolveRelativePath(packageEntryPoint + ".d.ts", moduleDirectory);
+
+				if (this.host.fileExists(packageEntryPointPath)) {
+					return {
+						absoluteModuleIdentifier: io.dirName(packageEntryPointPath) + "/" + packageEntryPoint,
+						absoluteModulePath: packageEntryPointPath
+					};
+				}
             }
 
             // How about an index.ts in the module directory?
